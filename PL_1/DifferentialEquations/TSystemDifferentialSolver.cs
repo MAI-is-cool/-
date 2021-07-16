@@ -30,15 +30,18 @@ namespace StandartHelperLibrary.MathHelper
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
             // Рабочие переменные
 
-            double [] Y = new double [CountEquation];//Массив всех Y
+            double[] Y = new double [CountEquation];//Массив всех Y
             double[,] Res = new double[CountEquation +1 , CountOfIterations];// задаем размер матрицы ответов с незав. перем.
+
             double[] Coefs1 = new double[CountEquation];// число 1-ыx коэф. метода по числу уравнений
             double[] Coefs2 = new double[CountEquation];// число 2-ыx коэф. метода по числу уравнений
             double[] Coefs3 = new double[CountEquation];// число 3-иx коэф. метода по числу уравнений
             double[] Coefs4 = new double[CountEquation];// число 4-ыx коэф. метода по числу уравнений
-            double []Y2 = new double[CountEquation]; // число переменных для 2-го коэф. включая независимую
-            double []Y3 = new double[CountEquation];// число переменных для 3-го коэф. включая независимую
-            double[]Y4 = new double[CountEquation];// число переменных для 4-го коэф. включая независимую
+
+            double[] Y2 = new double[CountEquation]; // число переменных для 2-го коэф. включая независимую
+            double[] Y3 = new double[CountEquation];// число переменных для 3-го коэф. включая независимую
+            double[] Y4 = new double[CountEquation];// число переменных для 4-го коэф. включая независимую
+
             for (int k = 0; k < Equation.InitArray.Count; k++)
             {
                 Y[k] = InitArray[k];
@@ -56,29 +59,31 @@ namespace StandartHelperLibrary.MathHelper
                 PointSystemDifferential.Coeffs = new List<double[]>();
                 Coefs1 = Equation.ComputeEquation(X, Y);
                 // Находим значения переменных для второго коэф.    
-                double X2 = X + h / 2;
+                double Kx2_3 = X + h / 2;
+                double Kx4 = X + h;
+
+
                 for (int k = 0; k < CountEquation; k++)
                 {
                     Y2[k] = Y[k] + Coefs1[k] / 2;
                 }
-                Coefs2 = Equation.ComputeEquation(X2, Y2);
+                Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
 
                 // Находим значения переменных для третьго коэф.
-                double X3 = X + h / 2;
                 for (int k = 0; k < CountEquation; k++)
                 {
                     Y3[k] = Y[k] + Coefs2[k] / 2;
                 }
 
-                Coefs3 = Equation.ComputeEquation(X3, Y3);
+                Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
 
                 // Находим значения переменных для 4 коэф.
-                double X4 = X + h;
+
                 for (int k = 0; k < CountEquation; k++)
                 {
                     Y4[k] = Y[k] + Coefs3[k];
                 }
-                Coefs4 = Equation.ComputeEquation(X4, Y4);
+                Coefs4 = Equation.ComputeEquation(Kx4, Y4);
 
                 // Находим новые значения переменных включая независимую    
 
