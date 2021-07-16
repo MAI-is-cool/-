@@ -19,7 +19,7 @@ namespace StandartHelperLibrary.MathHelper
         /// </summary>
         /// <param name="Equation">Решаемая система уравнений и настройки решателя</param>
         /// <returns>Результат решения</returns>
-        public static TSystemResultDifferential SolveSystemResidualFourRungeKutta(ISystemDifferentialEquation Equation)
+        public static TSystemResidualResultDifferential SolveSystemResidualFourRungeKutta(ISystemDifferentialEquation Equation)
         {
             double X = Equation.Min_X;                              // Крайняя левая точка диапазона "х" 
             double h = Equation.Step;                               // Шаг сетки "h" 
@@ -27,7 +27,7 @@ namespace StandartHelperLibrary.MathHelper
             int CountOfIterations = Equation.CountIterations;       // Количество итераций  
             int CountEquation = Equation.CountEquatiuon;            // кол-во урвнений
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
-            TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
+            TSystemResidualResultDifferential ResultSystemDifferential = new TSystemResidualResultDifferential();
             // Рабочие переменные
 
             double[] Y = new double [CountEquation];//Массив всех Y
@@ -53,7 +53,7 @@ namespace StandartHelperLibrary.MathHelper
             }
             for (int i = 0; i < CountOfIterations; i++)
             {
-                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential();
+                TPointSystemResidualDifferential PointSystemDifferential = new TPointSystemResidualDifferential();
                 PointSystemDifferential.Result = new double[CountEquation];//
                 PointSystemDifferential.IndexIteration = i;
                 PointSystemDifferential.Coeffs = new List<double[]>();

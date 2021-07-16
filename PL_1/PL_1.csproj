@@ -59,6 +59,7 @@
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TPointSystemDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TResultDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TResultDifferentialTwo.cs" />
+    <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemResidualDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemDifferential.cs" />
     <Compile Include="DifferentialEquations\TDifferentialSolverTwo.cs" />
     <Compile Include="DifferentialEquations\TResidual.cs" />
