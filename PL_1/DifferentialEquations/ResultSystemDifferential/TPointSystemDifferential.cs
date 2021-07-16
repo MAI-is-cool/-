@@ -30,7 +30,7 @@ namespace StandartHelperLibrary.MathHelper
         /// Коэффициенты решения
         /// </summary>
         public List<double[]> Coeffs { get; set; }
-//-------------------------------------------------------
+        //-------------------------------------------------------
         /// <summary>
         /// В текстовое представление
         /// </summary>
