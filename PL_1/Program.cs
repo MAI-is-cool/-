@@ -15,10 +15,10 @@ namespace PL_1
         static void Main(string[] args)
         {
             // Простой тест
-            TDifferentialSolver.Debug(TDifferentialSolver.Example_dN());
+            TDifferentialSolver.Debug(TDifferentialSolver.Example_dN_Residual());
             //TDifferentialSolverTwo.Debug(TDifferentialSolverTwo.Example_dXdYdZ());
             //
-
+            Console.WriteLine("over");
             Console.ReadKey();
         }
 //----------------------------------------------------------
