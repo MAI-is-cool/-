@@ -132,14 +132,24 @@ namespace StandartHelperLibrary.MathHelper
             {
                 Equation = new AEquation_dN((X, Y) =>
                 {
-                    double[] FunArray = new double[5];
+                    double[] FunArray = new double[5];//кол-во элементов в массиве должно быть = кол-во уравнений + кол-во невязок
 
+
+                    //---------------------------------------------------------------
+                    //задаются уравнения
                     FunArray[0] = (X + Y[0] + Y[1] + Y[2] + Y[3] + Y[4]) ;
                     FunArray[1] = (X + 2 * Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[2] = (X + Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[4] = (2 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
-                    return FunArray;   // интегрируемая система 
+                    //---------------------------------------------------------------
+                    //задаются невязки
+                    //FunArray[5] =/*Вычисляемое значение, которое сравнивается*/ Y[1] + Y[2] /* минус заданное граничное значение */ - 0.5d;
+                    //FunArray[6] =/*Вычисляемое значение, которое сравнивается*/X + 2 * Y[0] /* минус заданное граничное значение */ - 5d;
+                    //---------------------------------------------------------------
+
+
+                    return FunArray;   // интегрируемая система + вычесленные невязки
                 }), 
                 InitArray = new List<double> { 1, 1, 1, 1, 1, },
                 CountIterations = 10,
@@ -151,6 +161,55 @@ namespace StandartHelperLibrary.MathHelper
             // Решаем
             return SolveSystemResidualFourRungeKutta(Equation);
         }
+
+        public static (double, double[,]) ReCalcStep(double X, double[] Y, double Step, double[,] delta_Residual)
+        {
+            double NewStep = new double();//Новый шаг, который будет вычислен в данном методе. В случае, если надо завершить вычисления будет возвращен ноль
+
+            List<TResidual> Residuals = new List<TResidual>();
+
+            //указываем граничные значения
+            TResidual R1 = new TResidual
+            {
+                Name = "H",
+                Value = 20000d,
+                Accuracy = 1d
+            };
+
+            TResidual R2 = new TResidual
+            {
+                Name = "Cx",
+                Value = 2d,
+                Accuracy = 0.01d
+            };
+
+            //составляем лист граничных значений
+            Residuals.Add(R1);
+            Residuals.Add(R2);
+
+            //указываем, как вычислять невязки и составляем их массив
+            double[] Residual_Calc = new double[2];
+            Residual_Calc[0] = X + Y[0] + Y[4];
+            Residual_Calc[1] = Y[1] + Y[2] + Y[3] + Y[4];
+
+            bool Over = false;
+            //проверка, не вошло ли уже значение в область
+            for (int i = 0; i < Residuals.Count(); i++)
+            {
+                if (Math.Abs(Residual_Calc[i] - Residuals[i].Value) < Residuals[i].Accuracy)
+                    return (0d, delta_Residual);
+            }
+
+            if (!Over)
+            {
+                
+            }
+        }
 //-----------------------------------------------------------
     }
 }
+
+
+
+//в солвер надо добавить выход если шаг = 0
+//надо реализовать изменение шага

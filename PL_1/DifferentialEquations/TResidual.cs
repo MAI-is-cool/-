@@ -17,5 +17,9 @@ namespace StandartHelperLibrary.MathHelper
         /// Value of residual
         /// </summary>
         public double Value { get; set; }
+        /// <summary>
+        /// Потребная точность невязки
+        /// </summary>
+        public double Accuracy { get; set; }
     }
 }
