@@ -24,15 +24,14 @@ namespace StandartHelperLibrary.MathHelper
             double X = Equation.Min_X;                              // Крайняя левая точка диапазона "х" 
             double h = Equation.Step;                               // Шаг сетки "h" 
             int t = Equation.Rounding;                              // Округление до нужного знака, после запятой 
-            int CountOfIterations = Equation.CountIterations;       // Количество итераций  
+            int CountOfIterations = Equation.CountIterations;       // Количество итераций  ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХ
             int CountEquation = Equation.CountEquatiuon;            // кол-во урвнений
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResidualResultDifferential ResultSystemDifferential = new TSystemResidualResultDifferential();
+
+            List<double[]> Ys = new List<double[]>();
+
             // Рабочие переменные
-
-            double[] Y = new double [CountEquation];//Массив всех Y
-            double[,] Res = new double[CountEquation +1 , CountOfIterations];// задаем размер матрицы ответов с незав. перем.
-
             double[] Coefs1 = new double[CountEquation];// число 1-ыx коэф. метода по числу уравнений
             double[] Coefs2 = new double[CountEquation];// число 2-ыx коэф. метода по числу уравнений
             double[] Coefs3 = new double[CountEquation];// число 3-иx коэф. метода по числу уравнений
@@ -42,21 +41,23 @@ namespace StandartHelperLibrary.MathHelper
             double[] Y3 = new double[CountEquation];// число переменных для 3-го коэф. включая независимую
             double[] Y4 = new double[CountEquation];// число переменных для 4-го коэф. включая независимую
 
+            //копируем начальные значения игреков в массив, который будет использоваться для вычислений
+            double[] Y = new double [CountEquation];//Массив всех Y
             for (int k = 0; k < Equation.InitArray.Count; k++)
             {
                 Y[k] = InitArray[k];
             }
-            Res[0, 0] = X;
-            for (int j = 1; j < CountEquation; j++)
-            {
-                Res[j, 0] = Y[j];// первая точка результата 
-            }
+
+            Ys.Add(Y);//добавление массивов значений игреков
             for (int i = 0; i < CountOfIterations; i++)
             {
-                TPointSystemResidualDifferential PointSystemDifferential = new TPointSystemResidualDifferential();
-                PointSystemDifferential.Result = new double[CountEquation];//
-                PointSystemDifferential.IndexIteration = i;
-                PointSystemDifferential.Coeffs = new List<double[]>();
+                TPointSystemResidualDifferential PointSystemDifferential = new TPointSystemResidualDifferential
+                {
+                    Result = new double[CountEquation],
+                    IndexIteration = i,
+                    Coeffs = new List<double[]>()
+                };
+
                 Coefs1 = Equation.ComputeEquation(X, Y);
                 // Находим значения переменных для второго коэф.    
                 double Kx2_3 = X + h / 2;
@@ -97,12 +98,19 @@ namespace StandartHelperLibrary.MathHelper
                 {
                     PointSystemDifferential.Result[j] = Y[j];
                 }
-                X += h;
                 PointSystemDifferential.Coeffs.Add(Coefs1);
                 PointSystemDifferential.Coeffs.Add(Coefs2);
                 PointSystemDifferential.Coeffs.Add(Coefs3);
                 PointSystemDifferential.Coeffs.Add(Coefs4);
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
+                Ys.Add(Y);
+                h = ReCalcStep(X, Ys, h);
+                if (h == 0d)
+                    return ResultSystemDifferential;
+
+
+
+                X += h;
             }
             // Вернуть результат
             return ResultSystemDifferential;
@@ -162,11 +170,13 @@ namespace StandartHelperLibrary.MathHelper
             return SolveSystemResidualFourRungeKutta(Equation);
         }
 
-        public static (double, double[,]) ReCalcStep(double X, double[] Y, double Step, double[,] delta_Residual)
+        public static double ReCalcStep(double X, List<double[]> Ys, double Step)
         {
             double NewStep = new double();//Новый шаг, который будет вычислен в данном методе. В случае, если надо завершить вычисления будет возвращен ноль
 
             List<TResidual> Residuals = new List<TResidual>();
+
+            int iteration = Ys.Count() - 1;
 
             //указываем граничные значения
             TResidual R1 = new TResidual
@@ -189,23 +199,23 @@ namespace StandartHelperLibrary.MathHelper
 
             //указываем, как вычислять невязки и составляем их массив
             double[] Residual_Calc = new double[2];
-            Residual_Calc[0] = X + Y[0] + Y[4];
-            Residual_Calc[1] = Y[1] + Y[2] + Y[3] + Y[4];
+            Residual_Calc[0] = X + Ys[iteration][0] + Ys[iteration][4];
+            Residual_Calc[1] = Ys[iteration][1] + Ys[iteration][2] + Ys[iteration][3] + Ys[iteration][4];
 
             bool Over = false;
             //проверка, не вошло ли уже значение в область
             for (int i = 0; i < Residuals.Count(); i++)
             {
-                if (Math.Abs(Residual_Calc[i] - Residuals[i].Value) < Residuals[i].Accuracy)
-                    return (0d, delta_Residual);
+                if ((Math.Abs(Residual_Calc[i] - Residuals[i].Value) < Residuals[i].Accuracy) || (Residual_Calc[i] + Residuals[i].Accuracy < Residuals[i].Value))
+                    return 0d;
             }
 
             if (!Over)
             {
-                
+
             }
         }
-//-----------------------------------------------------------
+        //-----------------------------------------------------------
     }
 }
 
