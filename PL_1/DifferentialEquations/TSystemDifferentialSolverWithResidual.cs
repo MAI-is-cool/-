@@ -29,6 +29,8 @@ namespace StandartHelperLibrary.MathHelper
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResidualResultDifferential ResultSystemDifferential = new TSystemResidualResultDifferential();
 
+
+            List<double> Xs = new List<double>();
             List<double[]> Ys = new List<double[]>();
 
             // Рабочие переменные
@@ -48,6 +50,7 @@ namespace StandartHelperLibrary.MathHelper
                 Y[k] = InitArray[k];
             }
 
+            Xs.Add(X);
             Ys.Add(Y);//добавление массивов значений игреков
             for (int i = 0; i < CountOfIterations; i++)
             {
@@ -103,8 +106,11 @@ namespace StandartHelperLibrary.MathHelper
                 PointSystemDifferential.Coeffs.Add(Coefs3);
                 PointSystemDifferential.Coeffs.Add(Coefs4);
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
+
+                if (i > 0)
+                    Xs.Add(X);
                 Ys.Add(Y);
-                h = ReCalcStep(X, Ys, h);
+                h = ReCalcStep(Xs, Ys, h);
                 if (h == 0d)
                     return ResultSystemDifferential;
 
@@ -140,7 +146,7 @@ namespace StandartHelperLibrary.MathHelper
             {
                 Equation = new AEquation_dN((X, Y) =>
                 {
-                    double[] FunArray = new double[5];//кол-во элементов в массиве должно быть = кол-во уравнений + кол-во невязок
+                    double[] FunArray = new double[5];//кол-во элементов в массиве должно быть = кол-во уравнений
 
 
                     //---------------------------------------------------------------
@@ -151,11 +157,6 @@ namespace StandartHelperLibrary.MathHelper
                     FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[4] = (2 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     //---------------------------------------------------------------
-                    //задаются невязки
-                    //FunArray[5] =/*Вычисляемое значение, которое сравнивается*/ Y[1] + Y[2] /* минус заданное граничное значение */ - 0.5d;
-                    //FunArray[6] =/*Вычисляемое значение, которое сравнивается*/X + 2 * Y[0] /* минус заданное граничное значение */ - 5d;
-                    //---------------------------------------------------------------
-
 
                     return FunArray;   // интегрируемая система + вычесленные невязки
                 }), 
@@ -170,15 +171,12 @@ namespace StandartHelperLibrary.MathHelper
             return SolveSystemResidualFourRungeKutta(Equation);
         }
 
-        public static double ReCalcStep(double X, List<double[]> Ys, double Step)
+        public static double ReCalcStep(List<double> Xs, List<double[]> Ys, double Step)
         {
-            double NewStep = new double();//Новый шаг, который будет вычислен в данном методе. В случае, если надо завершить вычисления будет возвращен ноль
-
-            List<TResidual> Residuals = new List<TResidual>();
-
             int iteration = Ys.Count() - 1;
-
+            
             //указываем граничные значения
+            List<TResidual> Residuals_Attributes = new List<TResidual>();
             TResidual R1 = new TResidual
             {
                 Name = "H",
@@ -192,28 +190,55 @@ namespace StandartHelperLibrary.MathHelper
                 Value = 2d,
                 Accuracy = 0.01d
             };
-
             //составляем лист граничных значений
-            Residuals.Add(R1);
-            Residuals.Add(R2);
-
-            //указываем, как вычислять невязки и составляем их массив
-            double[] Residual_Calc = new double[2];
-            Residual_Calc[0] = X + Ys[iteration][0] + Ys[iteration][4];
-            Residual_Calc[1] = Ys[iteration][1] + Ys[iteration][2] + Ys[iteration][3] + Ys[iteration][4];
-
-            bool Over = false;
-            //проверка, не вошло ли уже значение в область
-            for (int i = 0; i < Residuals.Count(); i++)
+            Residuals_Attributes.Add(R1);
+            Residuals_Attributes.Add(R2);
+            
+            //zadayetsya metod vichislenie nevyazok
+            var Residuals_calculation = new AEquation_dN((X, Y) =>
             {
-                if ((Math.Abs(Residual_Calc[i] - Residuals[i].Value) < Residuals[i].Accuracy) || (Residual_Calc[i] + Residuals[i].Accuracy < Residuals[i].Value))
+                double[] Residuals_arr = new double[Residuals_Attributes.Count()];//кол-во элементов в массиве должно быть = кол-во невязок
+                //---------------------------------------------------------------
+                //задаются уравнения
+                Residuals_arr[0] = X + Y[0] + Y[4];
+                Residuals_arr[1] = Y[1] + Y[2] + Y[3] + Y[4];
+                //---------------------------------------------------------------
+                return Residuals_arr;   // интегрируемая система + вычесленные невязки
+            });
+
+            var Residuals_1 = Residuals_calculation(Xs[iteration], Ys[iteration]);
+            var Residuals_0 = Residuals_calculation(Xs[iteration - 1], Ys[iteration - 1]);
+            var Residual_delta = new double[Residuals_Attributes.Count()];
+            var Residual_Rmng = new double[Residuals_Attributes.Count()];
+            for (int i = 0; i < Residual_delta.Length; i++)
+            {
+                Residual_delta[i] = Residuals_0[i] - Residuals_1[i];
+                Residual_Rmng[i] = Residuals_Attributes[i].Value - Residuals_1[i];
+            }
+
+            //объявление массива для корректирующих коэффициентов & заполнение массива корректирующих коэф
+            double[] Correction_Coefficients = new double[Residuals_Attributes.Count()];
+            for (int i = 0; i < Correction_Coefficients.Count(); i++)
+            {
+                Correction_Coefficients[i] = Residual_delta[i] / Residuals_Attributes[i].Accuracy;
+            }
+
+            double CC_max = new double();
+            CC_max = Correction_Coefficients[0];
+            for (int i = 0; i < Correction_Coefficients.Length; i++)
+            {
+                if (Correction_Coefficients[i] > CC_max)
+                    CC_max = Correction_Coefficients[i];
+            }
+
+
+            //проверка, не вошло ли уже значение в область
+            for (int i = 0; i < Residuals_Attributes.Count(); i++)
+            {
+                if ((Math.Abs(Residuals_1[i]) < Residuals_Attributes[i].Accuracy) || (Residuals_1[i] + Residuals_Attributes[i].Accuracy > Residuals_Attributes[i].Value))//pereproverit'
                     return 0d;
             }
-
-            if (!Over)
-            {
-
-            }
+            return CC_max;
         }
         //-----------------------------------------------------------
     }
