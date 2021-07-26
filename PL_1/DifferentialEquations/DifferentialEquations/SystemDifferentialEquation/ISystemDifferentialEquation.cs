@@ -42,7 +42,7 @@ namespace StandartHelperLibrary.MathHelper
         /// <summary>
         /// Количество уравнений системы
         /// </summary>
-        int CountEquatiuon { get; set; }
+        int CountEquations { get; set; }
     }
 }
 

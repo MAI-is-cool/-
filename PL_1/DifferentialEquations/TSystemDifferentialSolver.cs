@@ -25,7 +25,7 @@ namespace StandartHelperLibrary.MathHelper
             double h = Equation.Step;                               // Шаг сетки "h" 
             int t = Equation.Rounding;                              // Округление до нужного знака, после запятой 
             int CountOfIterations = Equation.CountIterations;       // Количество итераций  
-            int CountEquation = Equation.CountEquatiuon;            // кол-во урвнений
+            int CountEquation = Equation.CountEquations;            // кол-во урвнений
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
             // Рабочие переменные
@@ -146,7 +146,7 @@ namespace StandartHelperLibrary.MathHelper
                 Min_X = 0,
                 Rounding = 3,
                 Step = 1,
-                CountEquatiuon = 5
+                CountEquations = 5
             };
             // Решаем
             return SolveSystemFourRungeKutta(Equation);

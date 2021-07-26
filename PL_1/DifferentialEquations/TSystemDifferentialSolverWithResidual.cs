@@ -24,8 +24,8 @@ namespace StandartHelperLibrary.MathHelper
             double X = Equation.Min_X;                              // Крайняя левая точка диапазона "х" 
             double h = Equation.Step;                               // Шаг сетки "h" 
             int t = Equation.Rounding;                              // Округление до нужного знака, после запятой 
-            int CountOfIterations = Equation.CountIterations;       // Количество итераций  ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХ
-            int CountEquation = Equation.CountEquatiuon;            // кол-во урвнений
+            int NumberOfIterations = Equation.CountIterations;      // Количество итераций  ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХ
+            int NumberOfEquations = Equation.CountEquations;        // кол-во урвнений
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResidualResultDifferential ResultSystemDifferential = new TSystemResidualResultDifferential();
 
@@ -34,17 +34,17 @@ namespace StandartHelperLibrary.MathHelper
             List<double[]> Ys = new List<double[]>();
 
             // Рабочие переменные
-            double[] Coefs1 = new double[CountEquation];// число 1-ыx коэф. метода по числу уравнений
-            double[] Coefs2 = new double[CountEquation];// число 2-ыx коэф. метода по числу уравнений
-            double[] Coefs3 = new double[CountEquation];// число 3-иx коэф. метода по числу уравнений
-            double[] Coefs4 = new double[CountEquation];// число 4-ыx коэф. метода по числу уравнений
+            double[] Coefs1 = new double[NumberOfEquations];// число 1-ыx коэф. метода по числу уравнений
+            double[] Coefs2 = new double[NumberOfEquations];// число 2-ыx коэф. метода по числу уравнений
+            double[] Coefs3 = new double[NumberOfEquations];// число 3-иx коэф. метода по числу уравнений
+            double[] Coefs4 = new double[NumberOfEquations];// число 4-ыx коэф. метода по числу уравнений
 
-            double[] Y2 = new double[CountEquation]; // число переменных для 2-го коэф. включая независимую
-            double[] Y3 = new double[CountEquation];// число переменных для 3-го коэф. включая независимую
-            double[] Y4 = new double[CountEquation];// число переменных для 4-го коэф. включая независимую
+            double[] Y2 = new double[NumberOfEquations]; // число переменных для 2-го коэф. включая независимую
+            double[] Y3 = new double[NumberOfEquations];// число переменных для 3-го коэф. включая независимую
+            double[] Y4 = new double[NumberOfEquations];// число переменных для 4-го коэф. включая независимую
 
             //копируем начальные значения игреков в массив, который будет использоваться для вычислений
-            double[] Y = new double [CountEquation];//Массив всех Y
+            double[] Y = new double[NumberOfEquations];//Массив всех Y
             for (int k = 0; k < Equation.InitArray.Count; k++)
             {
                 Y[k] = InitArray[k];
@@ -52,59 +52,57 @@ namespace StandartHelperLibrary.MathHelper
 
             Xs.Add(X);
             Ys.Add(Y);//добавление массивов значений игреков
-            for (int i = 0; i < CountOfIterations; i++)
+            for (int i = 0; i < NumberOfIterations; i++)
             {
                 TPointSystemResidualDifferential PointSystemDifferential = new TPointSystemResidualDifferential
                 {
-                    Result = new double[CountEquation],
+                    Result = new double[NumberOfEquations],
                     IndexIteration = i,
                     Coeffs = new List<double[]>()
                 };
 
-                Coefs1 = Equation.ComputeEquation(X, Y);
-                // Находим значения переменных для второго коэф.    
-                double Kx2_3 = X + h / 2;
-                double Kx4 = X + h;
+                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                var Result = CalculateValuesOf_Y(X, Y, h, Equation);
+                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                //double Kx2_3 = X + h / 2;
+                //double Kx4 = X + h;
+
+                //Coefs1 = Equation.ComputeEquation(X, Y);
+
+                //// Находим значения переменных для второго коэф. 
+                //Y2 = Do_some_magic(Y, Coefs1, NumberOfEquations, true);
+                //Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
+
+                //// Находим значения переменных для третьго коэф.
+                //Y3 = Do_some_magic(Y, Coefs2, NumberOfEquations, true);
+                //Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
+
+                //// Находим значения переменных для 4 коэф.
+                //Y4 = Do_some_magic(Y, Coefs3, NumberOfEquations, false);
+                //Coefs4 = Equation.ComputeEquation(Kx4, Y4);
+
+                //// Находим новые значения переменных включая независимую    
+                //for (int k = 0; k < NumberOfEquations; k++)
+                //{
+                //    Y[k] += (1.0 / 6.0) * (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]);
+                //}
+                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
-                for (int k = 0; k < CountEquation; k++)
-                {
-                    Y2[k] = Y[k] + Coefs1[k] / 2;
-                }
-                Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
-
-                // Находим значения переменных для третьго коэф.
-                for (int k = 0; k < CountEquation; k++)
-                {
-                    Y3[k] = Y[k] + Coefs2[k] / 2;
-                }
-
-                Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
-
-                // Находим значения переменных для 4 коэф.
-
-                for (int k = 0; k < CountEquation; k++)
-                {
-                    Y4[k] = Y[k] + Coefs3[k];
-                }
-                Coefs4 = Equation.ComputeEquation(Kx4, Y4);
-
-                // Находим новые значения переменных включая независимую    
-
-                for (int k = 0; k < CountEquation; k++)
-                {
-                    Y[k] += (1.0 / 6.0) * (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]);
-                }
-                PointSystemDifferential.X = X;
                 // Результат  иттерации:
-                for (int j = 0; j < CountEquation; j++)
-                {
-                    PointSystemDifferential.Result[j] = Y[j];
-                }
-                PointSystemDifferential.Coeffs.Add(Coefs1);
-                PointSystemDifferential.Coeffs.Add(Coefs2);
-                PointSystemDifferential.Coeffs.Add(Coefs3);
-                PointSystemDifferential.Coeffs.Add(Coefs4);
+                PointSystemDifferential.X = X; //ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+                //may be...
+                PointSystemDifferential.Result = Result.Y;
+                //for (int j = 0; j < NumberOfEquations; j++)
+                //{
+                //    PointSystemDifferential.Result[j] = Y[j];
+                //}
+
+                PointSystemDifferential.Coeffs.Add(Result.Coefs1);
+                PointSystemDifferential.Coeffs.Add(Result.Coefs2);
+                PointSystemDifferential.Coeffs.Add(Result.Coefs3);
+                PointSystemDifferential.Coeffs.Add(Result.Coefs4);
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
                 if (i > 0)      // перепроверить
@@ -114,8 +112,7 @@ namespace StandartHelperLibrary.MathHelper
 
                 //+++++++++++++++++++++++++++++++++++++++//
                 //          ИЗМЕНЕНИЕ ШАГА               //
-                double StepCorrectionCoef = new double();
-                StepCorrectionCoef = CalcStepCorrectionCoef(Xs, Ys, h);
+                var StepCorrectionCoef = CalcStepCorrectionCoef(Xs, Ys, h);
                 if (StepCorrectionCoef == 0d)
                     return ResultSystemDifferential;
                 h = h * 0.1d / StepCorrectionCoef;
@@ -127,6 +124,59 @@ namespace StandartHelperLibrary.MathHelper
             }
             // Вернуть результат
             return ResultSystemDifferential;
+        }
+
+        private static (double[] Y, double[] Coefs1, double[] Coefs2, double[] Coefs3, double[] Coefs4) CalculateValuesOf_Y(double X, double[] Y, double h, ISystemDifferentialEquation Equation)
+        {
+            int NumberOfEquations = Equation.CountEquations;
+
+            double Kx2_3 = X + h / 2;
+            double Kx4 = X + h;
+
+            var Coefs1 = Equation.ComputeEquation(X, Y);
+
+            // Находим значения переменных для второго коэф. 
+            var Y2 = Do_some_magic(Y, Coefs1, NumberOfEquations, true);
+            var Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
+
+            // Находим значения переменных для третьго коэф.
+            var Y3 = Do_some_magic(Y, Coefs2, NumberOfEquations, true);
+            var Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
+
+            // Находим значения переменных для 4 коэф.
+            var Y4 = Do_some_magic(Y, Coefs3, NumberOfEquations, false);
+            var Coefs4 = Equation.ComputeEquation(Kx4, Y4);
+
+            // Находим новые значения переменных включая независимую    
+            for (int k = 0; k < NumberOfEquations; k++)
+            {
+                Y[k] += (1.0 / 6.0) * (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]);
+            }
+            return (Y, Coefs1, Coefs2, Coefs3, Coefs4);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Y"></param>
+        /// <param name="Coefs">Массив соответствующих коэффициентов</param>
+        /// <param name="NumberOfEquations">Число уравнений. Отправляется для выполнения цикла соответствующее кол-во раз</param>
+        /// <param name="This_is_2nd_or_3rd_Y">правда если при вызове название данной булиновой переменной верно</param>
+        /// <returns></returns>
+        private static double[] Do_some_magic (double[] Y, double[] Coefs, int NumberOfEquations, bool This_is_2nd_or_3rd_Y)
+        {
+            double[] Y_OUT = new double[NumberOfEquations];
+            double K234 = new double(); //коэффициент, который только и отличается при расчете У2/У3/У4
+            if (This_is_2nd_or_3rd_Y)   //определяется значение этого коэфа
+                K234 = 2d;              
+            else
+                K234 = 1d;
+            for (int i = 0; i < NumberOfEquations; i++) 
+            {
+                Y_OUT[i] = Y[i] + Coefs[i] / K234;       //выполняется прямое предназначение метода
+            }
+            return Y_OUT;
         }
         //------------------------------------------------------------
         /// <summary>
@@ -172,7 +222,7 @@ namespace StandartHelperLibrary.MathHelper
                 Min_X = 0,
                 Rounding = 3,
                 Step = 1,
-                CountEquatiuon = 5
+                CountEquations = 5
             };
             // Решаем
             return SolveSystemResidualFourRungeKutta(Equation);
