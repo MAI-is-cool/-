@@ -50,7 +50,7 @@ namespace StandartHelperLibrary.MathHelper
                 Y[k] = InitArray[k];
             }
 
-            //Закидываем первые значения в резалт
+            //Закидываем первые значения в резалт поинт и далее в резалт
             TPointSystemDifferential PointSystemDifferentialInitial = new TPointSystemDifferential
             {
                 Result = new double[NumberOfEquations],
