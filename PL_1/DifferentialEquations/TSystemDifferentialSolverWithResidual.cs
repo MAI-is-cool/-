@@ -112,10 +112,10 @@ namespace StandartHelperLibrary.MathHelper
 
                 //+++++++++++++++++++++++++++++++++++++++//
                 //          ИЗМЕНЕНИЕ ШАГА               //
-                var StepCorrectionCoef = CalcStepCorrectionCoef(Xs, Ys, h);
-                if (StepCorrectionCoef == 0d)
-                    return ResultSystemDifferential;
-                h = h * 0.1d / StepCorrectionCoef;
+                //var StepCorrectionCoef = CalcStepCorrectionCoef(Xs, Ys, h);
+                //if (StepCorrectionCoef == 0d)
+                //    return ResultSystemDifferential;
+                //h = h * 0.1d / StepCorrectionCoef;
                 //+++++++++++++++++++++++++++++++++++++++//
 
 
@@ -125,7 +125,14 @@ namespace StandartHelperLibrary.MathHelper
             // Вернуть результат
             return ResultSystemDifferential;
         }
-
+        /// <summary>
+        /// Метод вычисления новых значений Y с шагом в h
+        /// </summary>
+        /// <param name="X">Старое значение Х (для Х + h будут вычисляться Y)</param>
+        /// <param name="Y">Старые значения Y (на основании которых будут найдены новые значения Y)</param>
+        /// <param name="h">Значение "шага"</param>
+        /// <param name="Equation">Решаемая система уравнений и настройки решателя</param>
+        /// <returns></returns>
         private static (double[] Y, double[] Coefs1, double[] Coefs2, double[] Coefs3, double[] Coefs4) CalculateValuesOf_Y(double X, double[] Y, double h, ISystemDifferentialEquation Equation)
         {
             int NumberOfEquations = Equation.CountEquations;
@@ -157,7 +164,7 @@ namespace StandartHelperLibrary.MathHelper
 
 
         /// <summary>
-        /// 
+        /// ✧･ﾟ: *✧･ﾟ:*Makes precious magic*:･ﾟ✧*:･ﾟ✧
         /// </summary>
         /// <param name="Y"></param>
         /// <param name="Coefs">Массив соответствующих коэффициентов</param>
@@ -306,3 +313,5 @@ namespace StandartHelperLibrary.MathHelper
 
 
 //сделать цикл выч У и подбор шага.
+//откорректить вывод, когда метод нахождения коэффициента выводит 0
+//сделать начало коррекции шага не сразу, а прямо перед завершением.
