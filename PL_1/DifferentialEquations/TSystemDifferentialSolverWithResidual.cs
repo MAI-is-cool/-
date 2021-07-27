@@ -19,7 +19,7 @@ namespace StandartHelperLibrary.MathHelper
         /// </summary>
         /// <param name="Equation">Решаемая система уравнений и настройки решателя</param>
         /// <returns>Результат решения</returns>
-        public static TSystemResidualResultDifferential SolveSystemResidualFourRungeKutta(ISystemDifferentialEquation Equation)
+        public static TSystemResultDifferential SolveSystemResidualFourRungeKutta(ISystemDifferentialEquation Equation)
         {
             double X = Equation.Min_X;                              // Крайняя левая точка диапазона "х" 
             double h = Equation.Step;                               // Шаг сетки "h" 
@@ -27,7 +27,7 @@ namespace StandartHelperLibrary.MathHelper
             int NumberOfIterations = Equation.CountIterations;      // Количество итераций  ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХ
             int NumberOfEquations = Equation.CountEquations;        // кол-во урвнений
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
-            TSystemResidualResultDifferential ResultSystemDifferential = new TSystemResidualResultDifferential();
+            TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
 
 
             List<double> Xs = new List<double>();
@@ -54,7 +54,7 @@ namespace StandartHelperLibrary.MathHelper
             Ys.Add(Y);//добавление массивов значений игреков
             for (int i = 0; i < NumberOfIterations; i++)
             {
-                TPointSystemResidualDifferential PointSystemDifferential = new TPointSystemResidualDifferential
+                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential
                 {
                     Result = new double[NumberOfEquations],
                     IndexIteration = i,
@@ -105,9 +105,9 @@ namespace StandartHelperLibrary.MathHelper
                 PointSystemDifferential.Coeffs.Add(Result.Coefs4);
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
-                if (i > 0)      // перепроверить
-                    Xs.Add(X);  // перепроверить
-                Ys.Add(Y);      // перепроверить
+                //if (i > 0)      // перепроверить
+                //    Xs.Add(X);  // перепроверить
+                //Ys.Add(Y);      // перепроверить
 
 
                 //+++++++++++++++++++++++++++++++++++++++//
@@ -202,7 +202,7 @@ namespace StandartHelperLibrary.MathHelper
         /// <summary>
         /// Простой пример системы дифференциальных уравнений  и ее решения 
         /// <returns>Результат решения</returns>
-        public static TSystemResidualResultDifferential Example_dN_Residual()
+        public static TSystemResultDifferential Example_dN_Residual()
         {
 
             // Создаем систему уравнений, которая должна решаться и задаем ее параметры 

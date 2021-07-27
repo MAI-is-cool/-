@@ -53,10 +53,12 @@ namespace StandartHelperLibrary.MathHelper
             }
             for (int i = 0; i < CountOfIterations; i++)
             {
-                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential();
-                PointSystemDifferential.Result = new double[CountEquation];//
-                PointSystemDifferential.IndexIteration = i;
-                PointSystemDifferential.Coeffs = new List<double[]>();
+                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential
+                {
+                    Result = new double[CountEquation],//
+                    IndexIteration = i,
+                    Coeffs = new List<double[]>()
+                };
                 Coefs1 = Equation.ComputeEquation(X, Y);
                 // Находим значения переменных для второго коэф.    
                 double Kx2_3 = X + h / 2;
