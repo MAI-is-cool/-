@@ -30,8 +30,8 @@ namespace StandartHelperLibrary.MathHelper
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
 
 
-            List<double> Xs = new List<double>();
-            List<double[]> Ys = new List<double[]>();
+            //List<double> Xs = new List<double>();
+            //List<double[]> Ys = new List<double[]>();
 
             // Рабочие переменные
             double[] Coefs1 = new double[NumberOfEquations];// число 1-ыx коэф. метода по числу уравнений
@@ -50,14 +50,23 @@ namespace StandartHelperLibrary.MathHelper
                 Y[k] = InitArray[k];
             }
 
-            Xs.Add(X);
-            Ys.Add(Y);//добавление массивов значений игреков
+            //Закидываем первые значения в резалт
+            TPointSystemDifferential PointSystemDifferentialInitial = new TPointSystemDifferential
+            {
+                Result = Y,
+                IndexIteration = 0,
+                X = X
+            };
+            ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
+
+            //Xs.Add(X);
+            //Ys.Add(Y);//добавление массивов значений игреков
             for (int i = 0; i < NumberOfIterations; i++)
             {
                 TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential
                 {
                     Result = new double[NumberOfEquations],
-                    IndexIteration = i,
+                    IndexIteration = i + 1,
                     Coeffs = new List<double[]>()
                 };
 
@@ -88,7 +97,7 @@ namespace StandartHelperLibrary.MathHelper
                 //}
                 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-
+                X += h;
                 // Результат  иттерации:
                 PointSystemDifferential.X = X; //ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -120,7 +129,7 @@ namespace StandartHelperLibrary.MathHelper
 
 
 
-                X += h;
+                
             }
             // Вернуть результат
             return ResultSystemDifferential;

@@ -38,11 +38,14 @@ namespace StandartHelperLibrary.MathHelper
         public override string ToString()
         {
             string strResult = "Point №" + (IndexIteration+1).ToString();
-            for (int i = 0; i < Coeffs.Count; i++)
+            if (Coeffs != null)
             {
-                strResult += "\nK" + (i + 1).ToString() + ":  ";
-                for (int j = 0; j < Coeffs[i].Length; j++)
-                    strResult += Coeffs[i][j].ToString() + "; ";
+                for (int i = 0; i < Coeffs.Count; i++)
+                {
+                    strResult += "\nK" + (i + 1).ToString() + ":  ";
+                    for (int j = 0; j < Coeffs[i].Length; j++)
+                        strResult += Coeffs[i][j].ToString() + "; ";
+                }
             }
             strResult += "\nX:   " + X.ToString() + "\n";
             for (int i = 0; i < Result.Length; i++)
