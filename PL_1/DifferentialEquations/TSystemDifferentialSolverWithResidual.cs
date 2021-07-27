@@ -29,9 +29,9 @@ namespace StandartHelperLibrary.MathHelper
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
 
-
-            //List<double> Xs = new List<double>();
-            //List<double[]> Ys = new List<double[]>();
+            //объявляются переменные 
+            List<double> Xs = new List<double>();
+            List<double[]> Ys = new List<double[]>();
 
             // Рабочие переменные
             double[] Coefs1 = new double[NumberOfEquations];// число 1-ыx коэф. метода по числу уравнений
@@ -67,12 +67,7 @@ namespace StandartHelperLibrary.MathHelper
             //Ys.Add(Y);//добавление массивов значений игреков
             for (int i = 0; i < NumberOfIterations; i++)
             {
-                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential
-                {
-                    Result = new double[NumberOfEquations],
-                    IndexIteration = i + 1,
-                    Coeffs = new List<double[]>()
-                };
+                
 
                 //Вычисляем новые значения Y и Coeffs для шага h
                 var Result =  CalculateValuesOf_Y(X, Y, h, Equation);
@@ -80,16 +75,18 @@ namespace StandartHelperLibrary.MathHelper
                 //прибавляем шаг к Х
                 X += h;
 
+                TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential // перенести в конец цикла---------------------------------
+                {
+                    Result = new double[NumberOfEquations],
+                    IndexIteration = i + 1,
+                    Coeffs = new List<double[]>{ Result.Coefs1, Result.Coefs2, Result.Coefs1, Result.Coefs3, Result.Coefs4 }
+                };
                 //Записываем новые значения в поинт, а далее поинт в резалт
                 PointSystemDifferential.X = X;
                 for (int j = 0; j < Y.Length; j++)
                 {
                     PointSystemDifferential.Result[j] = Result.Y[j];
                 }
-                PointSystemDifferential.Coeffs.Add(Result.Coefs1);
-                PointSystemDifferential.Coeffs.Add(Result.Coefs2);
-                PointSystemDifferential.Coeffs.Add(Result.Coefs3);
-                PointSystemDifferential.Coeffs.Add(Result.Coefs4);
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
                 //if (i > 0)      // перепроверить
@@ -104,10 +101,6 @@ namespace StandartHelperLibrary.MathHelper
                 //    return ResultSystemDifferential;
                 //h = h * 0.1d / StepCorrectionCoef;
                 //+++++++++++++++++++++++++++++++++++++++//
-
-
-
-                
             }
             // Вернуть результат
             return ResultSystemDifferential;
