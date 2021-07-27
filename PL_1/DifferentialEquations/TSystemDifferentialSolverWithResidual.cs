@@ -53,10 +53,14 @@ namespace StandartHelperLibrary.MathHelper
             //Закидываем первые значения в резалт
             TPointSystemDifferential PointSystemDifferentialInitial = new TPointSystemDifferential
             {
-                Result = Y,
+                Result = new double[NumberOfEquations],
                 IndexIteration = 0,
                 X = X
             };
+            for (int i = 0; i < Y.Length; i++)
+            {
+                PointSystemDifferentialInitial.Result[i] = Y[i];
+            }
             ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
             //Xs.Add(X);
@@ -70,44 +74,18 @@ namespace StandartHelperLibrary.MathHelper
                     Coeffs = new List<double[]>()
                 };
 
-                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                var Result = CalculateValuesOf_Y(X, Y, h, Equation);
-                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                //double Kx2_3 = X + h / 2;
-                //double Kx4 = X + h;
+                //Вычисляем новые значения Y и Coeffs для шага h
+                var Result =  CalculateValuesOf_Y(X, Y, h, Equation);
 
-                //Coefs1 = Equation.ComputeEquation(X, Y);
-
-                //// Находим значения переменных для второго коэф. 
-                //Y2 = Do_some_magic(Y, Coefs1, NumberOfEquations, true);
-                //Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
-
-                //// Находим значения переменных для третьго коэф.
-                //Y3 = Do_some_magic(Y, Coefs2, NumberOfEquations, true);
-                //Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
-
-                //// Находим значения переменных для 4 коэф.
-                //Y4 = Do_some_magic(Y, Coefs3, NumberOfEquations, false);
-                //Coefs4 = Equation.ComputeEquation(Kx4, Y4);
-
-                //// Находим новые значения переменных включая независимую    
-                //for (int k = 0; k < NumberOfEquations; k++)
-                //{
-                //    Y[k] += (1.0 / 6.0) * (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]);
-                //}
-                //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
+                //прибавляем шаг к Х
                 X += h;
-                // Результат  иттерации:
-                PointSystemDifferential.X = X; //ХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХХXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-                //may be...
-                PointSystemDifferential.Result = Result.Y;
-                //for (int j = 0; j < NumberOfEquations; j++)
-                //{
-                //    PointSystemDifferential.Result[j] = Y[j];
-                //}
-
+                //Записываем новые значения в поинт, а далее поинт в резалт
+                PointSystemDifferential.X = X;
+                for (int j = 0; j < Y.Length; j++)
+                {
+                    PointSystemDifferential.Result[j] = Result.Y[j];
+                }
                 PointSystemDifferential.Coeffs.Add(Result.Coefs1);
                 PointSystemDifferential.Coeffs.Add(Result.Coefs2);
                 PointSystemDifferential.Coeffs.Add(Result.Coefs3);
