@@ -29,7 +29,7 @@ namespace StandartHelperLibrary.MathHelper
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
 
-            //объявляются переменные 
+            //объявляются списки в которых будут храниться значения, которые были вычесленны. 
             List<double> Xs = new List<double>();
             List<double[]> Ys = new List<double[]>();
 
@@ -63,14 +63,112 @@ namespace StandartHelperLibrary.MathHelper
             }
             ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
-            //Xs.Add(X);
-            //Ys.Add(Y);//добавление массивов значений игреков
+            List<double[]> Values = new List<double[]>();
+            var TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
+            double[] Values_arr = new double[TrackedValues.Count()];
+            for (int i = 0; i < TrackedValues.Count(); i++)
+            {
+                Values_arr[i] = TrackedValues[i].CurrentValue;
+            }
+            Values.Add(Values_arr);
+            
+            
             for (int i = 0; i < NumberOfIterations; i++)
             {
-                
+                Xs.Add(X);// запись значений
+                double[] Ys_arr = new double[Y.Length];
+                for (int j = 0; j < Y.Length; j++)
+                {
+                    Ys_arr[j] = Y[j];
+                }
+                Ys.Add(Ys_arr);//добавление массивов значений игреков
 
+                (double[] Y, double[] Coefs1, double[] Coefs2, double[] Coefs3, double[] Coefs4) Result;
+                bool Incorrect = new bool();
+                bool TimeToStop = new bool();
+                bool StepChanged = new bool();
+                TimeToStop = false;
+                StepChanged = false;
+                do
+                {
+                    Incorrect = true;
+                    //Вычисляем новые значения Y и Coeffs для шага h
+                    Result = CalculateValuesOf_Y(X, Y, h, Equation);
+
+                    //просчет контрольных значений и невязок, так же хранит точность, название 
+                    TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
+
+                    double[] Deltas = new double[TrackedValues.Count()];
+                    for (int j = 0; j < TrackedValues.Count(); j++)
+                    {
+                        Deltas[j] = Y[j] - Values[Values.Count() - 1][j];
+                    }
+
+                    //проверка на необходимость уменьшения шага
+                    for (int j = 0; j < TrackedValues.Count(); j++)
+                    {
+                        if (Deltas[j] > 0)
+                        {
+                            if (TrackedValues[j].CurrentValue > TrackedValues[j].ControlValue + TrackedValues[j].Accuracy)
+                            {
+                                h = h / 2d;
+                                StepChanged = true;
+                                break;
+                            }
+                            else
+                            {
+                                //ok ok
+                            }
+                        }
+                        else
+                        {
+                            if (TrackedValues[j].CurrentValue < TrackedValues[j].ControlValue - TrackedValues[j].Accuracy)
+                            {
+                                h = h / 2d;
+                                StepChanged = true;
+                                break;
+                            }
+                            else
+                            {
+                                //ok ok
+                            }
+                        }
+                    }
+                    
+                    if (StepChanged)
+                    {
+                        for (int j = 0; j < Y.Length; j++)
+                        {
+                            Y[j] = Ys[Ys.Count() - 1][j];
+                        }
+                    }
+                    else
+                    {
+                        Incorrect = false;
+                        //проверка, не вошло ли уже значение в область
+                        for (int j = 0; j < TrackedValues.Count(); j++)
+                        {
+                            if (Math.Abs(TrackedValues[j].Residual) <= TrackedValues[j].Accuracy)//по хорошему бы переработать для случая, когда условие выхода отрицательное или когда начальное значение параметра больше чем условие выхода и идет спуск к выходному
+                            {
+                                TimeToStop = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    
+                }
+                while (Incorrect);
+
+
+                Values_arr = new double[TrackedValues.Count()];
+                for (int j = 0; j < TrackedValues.Count(); j++)
+                {
+                    Values_arr[j] = TrackedValues[j].CurrentValue;
+                }
+                Values.Add(Values_arr);
                 //Вычисляем новые значения Y и Coeffs для шага h
-                var Result =  CalculateValuesOf_Y(X, Y, h, Equation);
+                //var Result =  CalculateValuesOf_Y(X, Y, h, Equation);
 
                 //прибавляем шаг к Х
                 X += h;
@@ -79,7 +177,7 @@ namespace StandartHelperLibrary.MathHelper
                 {
                     Result = new double[NumberOfEquations],
                     IndexIteration = i + 1,
-                    Coeffs = new List<double[]>{ Result.Coefs1, Result.Coefs2, Result.Coefs1, Result.Coefs3, Result.Coefs4 }
+                    Coeffs = new List<double[]> { Result.Coefs1, Result.Coefs2, Result.Coefs1, Result.Coefs3, Result.Coefs4 }
                 };
                 //Записываем новые значения в поинт, а далее поинт в резалт
                 PointSystemDifferential.X = X;
@@ -89,9 +187,11 @@ namespace StandartHelperLibrary.MathHelper
                 }
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
-                //if (i > 0)      // перепроверить
-                //    Xs.Add(X);  // перепроверить
-                //Ys.Add(Y);      // перепроверить
+                if (TimeToStop)
+                    return ResultSystemDifferential;
+
+
+
 
 
                 //+++++++++++++++++++++++++++++++++++++++//
@@ -123,15 +223,15 @@ namespace StandartHelperLibrary.MathHelper
             var Coefs1 = Equation.ComputeEquation(X, Y);
 
             // Находим значения переменных для второго коэф. 
-            var Y2 = Do_some_magic(Y, Coefs1, NumberOfEquations, true);
+            var Y2 = Make_some_magic(Y, Coefs1, NumberOfEquations, true);
             var Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
 
             // Находим значения переменных для третьго коэф.
-            var Y3 = Do_some_magic(Y, Coefs2, NumberOfEquations, true);
+            var Y3 = Make_some_magic(Y, Coefs2, NumberOfEquations, true);
             var Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
 
             // Находим значения переменных для 4 коэф.
-            var Y4 = Do_some_magic(Y, Coefs3, NumberOfEquations, false);
+            var Y4 = Make_some_magic(Y, Coefs3, NumberOfEquations, false);
             var Coefs4 = Equation.ComputeEquation(Kx4, Y4);
 
             // Находим новые значения переменных включая независимую    
@@ -151,15 +251,15 @@ namespace StandartHelperLibrary.MathHelper
         /// <param name="NumberOfEquations">Число уравнений. Отправляется для выполнения цикла соответствующее кол-во раз</param>
         /// <param name="This_is_2nd_or_3rd_Y">правда если при вызове название данной булиновой переменной верно</param>
         /// <returns></returns>
-        private static double[] Do_some_magic (double[] Y, double[] Coefs, int NumberOfEquations, bool This_is_2nd_or_3rd_Y)
+        private static double[] Make_some_magic(double[] Y, double[] Coefs, int NumberOfEquations, bool This_is_2nd_or_3rd_Y)
         {
             double[] Y_OUT = new double[NumberOfEquations];
             double K234 = new double(); //коэффициент, который только и отличается при расчете У2/У3/У4
             if (This_is_2nd_or_3rd_Y)   //определяется значение этого коэфа
-                K234 = 2d;              
+                K234 = 2d;
             else
                 K234 = 1d;
-            for (int i = 0; i < NumberOfEquations; i++) 
+            for (int i = 0; i < NumberOfEquations; i++)
             {
                 Y_OUT[i] = Y[i] + Coefs[i] / K234;       //выполняется прямое предназначение метода
             }
@@ -178,7 +278,7 @@ namespace StandartHelperLibrary.MathHelper
             // В консоль
             Console.WriteLine(Result.ToString());
         }
- //------------------------------------------------------------
+        //------------------------------------------------------------
         /// <summary>
         /// Простой пример системы дифференциальных уравнений  и ее решения 
         /// <returns>Результат решения</returns>
@@ -195,7 +295,7 @@ namespace StandartHelperLibrary.MathHelper
 
                     //---------------------------------------------------------------
                     //задаются уравнения
-                    FunArray[0] = (X + Y[0] + Y[1] + Y[2] + Y[3] + Y[4]) ;
+                    FunArray[0] = (X + Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[1] = (X + 2 * Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[2] = (X + Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
@@ -203,7 +303,7 @@ namespace StandartHelperLibrary.MathHelper
                     //---------------------------------------------------------------
 
                     return FunArray;   // интегрируемая система
-                }), 
+                }),
                 InitArray = new List<double> { 1, 1, 1, 1, 1, },
                 CountIterations = 10,
                 Min_X = 0,
@@ -215,6 +315,35 @@ namespace StandartHelperLibrary.MathHelper
             return SolveSystemResidualFourRungeKutta(Equation);
         }
 
+        private static List<TResidual> CalculateValuesOfTrackedVariables(double X, double[] Y)
+        {
+            List<TResidual> Residuals = new List<TResidual>();
+            TResidual R1 = new TResidual()
+            {
+                Name = "",
+                ControlValue = 100000d,
+                CurrentValue = X + Y[0] + Y[4],
+                Accuracy = 1d
+            };
+
+            TResidual R2 = new TResidual()
+            {
+                Name = "",
+                ControlValue = 100000d,
+                CurrentValue = Y[1] + Y[2] + Y[3] + Y[4],
+                Accuracy = 1d
+            };
+
+            Residuals.Add(R1);
+            Residuals.Add(R2);
+
+            //double[] Attribute_Arr = new double[2];//кол-во элементов в массиве должно быть = кол-во методов вычисления
+            //Attribute_Arr[0] = X + Y[0] + Y[4];
+            //Attribute_Arr[1] = Y[1] + Y[2] + Y[3] + Y[4];
+            return Residuals;
+        }
+
+      
         public static double CalcStepCorrectionCoef(List<double> Xs, List<double[]> Ys, double Step)
         {
             int iteration = Ys.Count() - 1;
@@ -224,14 +353,14 @@ namespace StandartHelperLibrary.MathHelper
             TResidual R1 = new TResidual
             {
                 Name = "H",
-                Value = 20000d,
+                ControlValue = 20000d,
                 Accuracy = 1d
             };
 
             TResidual R2 = new TResidual
             {
                 Name = "Cx",
-                Value = 2d,
+                ControlValue = 2d,
                 Accuracy = 0.01d
             };
             //составляем лист граничных значений
@@ -260,13 +389,13 @@ namespace StandartHelperLibrary.MathHelper
             for (int i = 0; i < Residuals_delta.Length; i++)
             {
                 Residuals_delta[i] = ValuesOfAttributes_0[i] - ValuesOfAttributes_1[i];
-                Residuals[i] = Residuals_Attributes[i].Value - ValuesOfAttributes_1[i];
+                Residuals[i] = Residuals_Attributes[i].ControlValue - ValuesOfAttributes_1[i];
             }
 
             //проверка, не вошло ли уже значение в область или уже перешагнуло через нее
             for (int i = 0; i < Residuals_Attributes.Count(); i++)
             {
-                if ((Math.Abs(Residuals[i]) <= Residuals_Attributes[i].Accuracy) || (ValuesOfAttributes_1[i] > Residuals_Attributes[i].Value + Residuals_Attributes[i].Accuracy))//по хорошему бы переработать для случая, когда условие выхода отрицательное или когда начальное значение параметра больше чем условие выхода и идет спуск к выходному
+                if ((Math.Abs(Residuals[i]) <= Residuals_Attributes[i].Accuracy) || (ValuesOfAttributes_1[i] > Residuals_Attributes[i].ControlValue + Residuals_Attributes[i].Accuracy))//по хорошему бы переработать для случая, когда условие выхода отрицательное или когда начальное значение параметра больше чем условие выхода и идет спуск к выходному
                     return 0d;
             }
 
@@ -292,6 +421,5 @@ namespace StandartHelperLibrary.MathHelper
 }
 
 
-//сделать цикл выч У и подбор шага.
-//откорректить вывод, когда метод нахождения коэффициента выводит 0
-//сделать начало коррекции шага не сразу, а прямо перед завершением.
+//обойти изменение У в do while
+//используется изменение Y без возврата самого Y, требуется перепроверить, можно ли вообше не выводить Y?   CalculateValuesOf_Y

@@ -36,7 +36,7 @@ namespace StandartHelperLibrary.MathHelper
             for (int i = 0; i < Result.Length; i++)
                 strResult += "Y" + (i+1).ToString() + ":  " + Result[i].ToString() + "\n";
             for (int i = 0; i < Residuals.Count(); i++)                                                           //izbavit'sya ot etogo breda
-                strResult += "Residual - " + Residuals[i].Name + " = " + Residuals[i].Value.ToString() + "\n";
+                strResult += "Residual - " + Residuals[i].Name + " = " + Residuals[i].ControlValue.ToString() + "\n";
             
 
             return strResult;

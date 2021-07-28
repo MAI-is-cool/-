@@ -10,16 +10,31 @@ namespace StandartHelperLibrary.MathHelper
     public class TResidual
     {
         /// <summary>
-        /// Name of residual
+        /// Название граничной величены
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Value of residual
+        /// Значение граничной величены
         /// </summary>
-        public double Value { get; set; }
+        public double ControlValue { get; set; }
         /// <summary>
         /// Потребная точность невязки
         /// </summary>
         public double Accuracy { get; set; }
+        /// <summary>
+        /// Текущее значение граничной величены
+        /// </summary>
+        public double CurrentValue { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double Residual
+        {
+            get
+            {
+                return ControlValue - CurrentValue;
+            }
+                
+        }
     }
 }
