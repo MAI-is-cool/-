@@ -64,7 +64,7 @@ namespace StandartHelperLibrary.MathHelper
             ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
             List<double[]> Values = new List<double[]>();
-            var TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
+            var TrackedValues = CalculateValuesOfTrackedVariables(X, Y);
             double[] Values_arr = new double[TrackedValues.Count()];
             for (int i = 0; i < TrackedValues.Count(); i++)
             {
@@ -104,7 +104,7 @@ namespace StandartHelperLibrary.MathHelper
                     double[] Deltas = new double[TrackedValues.Count()];
                     for (int j = 0; j < TrackedValues.Count(); j++)
                     {
-                        Deltas[j] =/* Y[j] -*/Values[j][Values[j].Count() - 1] - Values[j][Values[j].Count() - 2];
+                        Deltas[j] =/* Y[j] -*/Values[Values.Count() - 1][j] - Values[Values.Count() - 2][j];
                     }
 
                     //проверка на необходимость уменьшения шага
