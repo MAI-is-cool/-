@@ -95,13 +95,16 @@ namespace StandartHelperLibrary.MathHelper
                     //Вычисляем новые значения Y и Coeffs для шага h
                     Result = CalculateValuesOf_Y(X, Y, h, Equation);
 
+                    if (i < 1)
+                        break;
+                    
                     //просчет контрольных значений и невязок, так же хранит точность, название 
                     TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
 
                     double[] Deltas = new double[TrackedValues.Count()];
                     for (int j = 0; j < TrackedValues.Count(); j++)
                     {
-                        Deltas[j] = Y[j] - Values[Values.Count() - 1][j];
+                        Deltas[j] =/* Y[j] -*/Values[j][Values[j].Count() - 1] - Values[j][Values[j].Count() - 2];
                     }
 
                     //проверка на необходимость уменьшения шага
@@ -134,7 +137,7 @@ namespace StandartHelperLibrary.MathHelper
                             }
                         }
                     }
-                    
+
                     if (StepChanged)
                     {
                         for (int j = 0; j < Y.Length; j++)
@@ -290,26 +293,26 @@ namespace StandartHelperLibrary.MathHelper
             {
                 Equation = new AEquation_dN((X, Y) =>
                 {
-                    double[] FunArray = new double[5];//кол-во элементов в массиве должно быть = кол-во уравнений
+                    double[] FunArray = new double[1];//кол-во элементов в массиве должно быть = кол-во уравнений
 
 
                     //---------------------------------------------------------------
                     //задаются уравнения
-                    FunArray[0] = (X + Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
-                    FunArray[1] = (X + 2 * Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
-                    FunArray[2] = (X + Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
-                    FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
-                    FunArray[4] = (2 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
+                    FunArray[0] = (4 * X);
+                    //FunArray[1] = (X + 2 * Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
+                    //FunArray[2] = (X + Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
+                    //FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
+                    //FunArray[4] = (2 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     //---------------------------------------------------------------
 
                     return FunArray;   // интегрируемая система
                 }),
-                InitArray = new List<double> { 1, 1, 1, 1, 1, },
-                CountIterations = 10,
+                InitArray = new List<double> { 0/*, 1, 1, 1, 1, */},
+                CountIterations = 1000,
                 Min_X = 0,
                 Rounding = 3,
-                Step = 1,
-                CountEquations = 5
+                Step = 0.1,
+                CountEquations = 1
             };
             // Решаем
             return SolveSystemResidualFourRungeKutta(Equation);
@@ -321,17 +324,17 @@ namespace StandartHelperLibrary.MathHelper
             TResidual R1 = new TResidual()
             {
                 Name = "",
-                ControlValue = 100000d,
-                CurrentValue = X + Y[0] + Y[4],
-                Accuracy = 1d
+                ControlValue = 1.99d,
+                CurrentValue = Y[0],
+                Accuracy = 0.02d
             };
 
             TResidual R2 = new TResidual()
             {
                 Name = "",
-                ControlValue = 100000d,
-                CurrentValue = Y[1] + Y[2] + Y[3] + Y[4],
-                Accuracy = 1d
+                ControlValue = 1d,
+                CurrentValue = X,
+                Accuracy = 0.01d
             };
 
             Residuals.Add(R1);
