@@ -95,16 +95,16 @@ namespace StandartHelperLibrary.MathHelper
                     //Вычисляем новые значения Y и Coeffs для шага h
                     Result = CalculateValuesOf_Y(X, Y, h, Equation);
 
-                    if (i < 1)
-                        break;
-                    
                     //просчет контрольных значений и невязок, так же хранит точность, название 
                     TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
 
+                    if (i < 1)
+                        break;
+                    
                     double[] Deltas = new double[TrackedValues.Count()];
                     for (int j = 0; j < TrackedValues.Count(); j++)
                     {
-                        Deltas[j] =/* Y[j] -*/Values[Values.Count() - 1][j] - Values[Values.Count() - 2][j];
+                        Deltas[j] =/* Y[j] -*/TrackedValues[j].CurrentValue - Values[Values.Count() - 1][j];
                     }
 
                     //проверка на необходимость уменьшения шага
@@ -123,7 +123,7 @@ namespace StandartHelperLibrary.MathHelper
                                 //ok ok
                             }
                         }
-                        else
+                        else if (Deltas[j] < 0)
                         {
                             if (TrackedValues[j].CurrentValue < TrackedValues[j].ControlValue - TrackedValues[j].Accuracy)
                             {
@@ -158,8 +158,6 @@ namespace StandartHelperLibrary.MathHelper
                             }
                         }
                     }
-                    
-                    
                 }
                 while (Incorrect);
 
@@ -170,8 +168,6 @@ namespace StandartHelperLibrary.MathHelper
                     Values_arr[j] = TrackedValues[j].CurrentValue;
                 }
                 Values.Add(Values_arr);
-                //Вычисляем новые значения Y и Coeffs для шага h
-                //var Result =  CalculateValuesOf_Y(X, Y, h, Equation);
 
                 //прибавляем шаг к Х
                 X += h;
@@ -226,21 +222,21 @@ namespace StandartHelperLibrary.MathHelper
             var Coefs1 = Equation.ComputeEquation(X, Y);
 
             // Находим значения переменных для второго коэф. 
-            var Y2 = Make_some_magic(Y, Coefs1, NumberOfEquations, true);
+            var Y2 = Make_some_magic(Y, Coefs1, NumberOfEquations, h, true);
             var Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
 
             // Находим значения переменных для третьго коэф.
-            var Y3 = Make_some_magic(Y, Coefs2, NumberOfEquations, true);
+            var Y3 = Make_some_magic(Y, Coefs2, NumberOfEquations, h, true);
             var Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
 
             // Находим значения переменных для 4 коэф.
-            var Y4 = Make_some_magic(Y, Coefs3, NumberOfEquations, false);
+            var Y4 = Make_some_magic(Y, Coefs3, NumberOfEquations, h, false);
             var Coefs4 = Equation.ComputeEquation(Kx4, Y4);
 
             // Находим новые значения переменных включая независимую    
             for (int k = 0; k < NumberOfEquations; k++)
             {
-                Y[k] += (1.0 / 6.0) * (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]);
+                Y[k] += (Coefs1[k] + 2 * (Coefs2[k] + Coefs3[k]) + Coefs4[k]) * h / 6d;
             }
             return (Y, Coefs1, Coefs2, Coefs3, Coefs4);
         }
@@ -254,7 +250,7 @@ namespace StandartHelperLibrary.MathHelper
         /// <param name="NumberOfEquations">Число уравнений. Отправляется для выполнения цикла соответствующее кол-во раз</param>
         /// <param name="This_is_2nd_or_3rd_Y">правда если при вызове название данной булиновой переменной верно</param>
         /// <returns></returns>
-        private static double[] Make_some_magic(double[] Y, double[] Coefs, int NumberOfEquations, bool This_is_2nd_or_3rd_Y)
+        private static double[] Make_some_magic(double[] Y, double[] Coefs, int NumberOfEquations, double h, bool This_is_2nd_or_3rd_Y)
         {
             double[] Y_OUT = new double[NumberOfEquations];
             double K234 = new double(); //коэффициент, который только и отличается при расчете У2/У3/У4
@@ -264,7 +260,7 @@ namespace StandartHelperLibrary.MathHelper
                 K234 = 1d;
             for (int i = 0; i < NumberOfEquations; i++)
             {
-                Y_OUT[i] = Y[i] + Coefs[i] / K234;       //выполняется прямое предназначение метода
+                Y_OUT[i] = Y[i] + h * Coefs[i] / K234;       //выполняется прямое предназначение метода
             }
             return Y_OUT;
         }
@@ -339,10 +335,7 @@ namespace StandartHelperLibrary.MathHelper
 
             Residuals.Add(R1);
             Residuals.Add(R2);
-
-            //double[] Attribute_Arr = new double[2];//кол-во элементов в массиве должно быть = кол-во методов вычисления
-            //Attribute_Arr[0] = X + Y[0] + Y[4];
-            //Attribute_Arr[1] = Y[1] + Y[2] + Y[3] + Y[4];
+            
             return Residuals;
         }
 
