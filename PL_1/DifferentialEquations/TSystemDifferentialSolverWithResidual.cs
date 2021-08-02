@@ -1,4 +1,4 @@
-﻿// Решение/работа с системой дифференциальных уравнений с n переменными и n неизвестными 
+﻿// Решение/работа с системой дифференциальных уравнений с n переменными и n неизвестными с учетом невязок
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace StandartHelperLibrary.MathHelper
 {
     /// <summary>
-    /// Решение/работа с системой дифференциальных уравнений с n переменными и n неизвестными 
+    /// Решение/работа с системой дифференциальных уравнений с n переменными и n неизвестными с учетом невязок
     /// </summary>
     public partial class TDifferentialSolver
     {
@@ -63,6 +63,7 @@ namespace StandartHelperLibrary.MathHelper
             }
             ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
+            //Массив текущих значений, по которым мы вычисляем невязку.(отслеживаемые значения, которые при достижения граничного, завершают интегрирование)
             List<double[]> Values = new List<double[]>();
             var TrackedValues = CalculateValuesOfTrackedVariables(X, Y);
             double[] Values_arr = new double[TrackedValues.Count()];
@@ -72,7 +73,7 @@ namespace StandartHelperLibrary.MathHelper
             }
             Values.Add(Values_arr);
             
-            
+            //Цикл интегрирования. На каждой итерации совершается 1 "Шаг" интегрирования
             for (int i = 0; i < NumberOfIterations; i++)
             {
                 Xs.Add(X);// запись значений
@@ -87,11 +88,11 @@ namespace StandartHelperLibrary.MathHelper
                 bool Incorrect = new bool();
                 bool TimeToStop = new bool();
                 bool StepChanged = new bool();
-                TimeToStop = false;
+                TimeToStop = false;// Меняется на "правда", когда наши отслеживаенмые значения попадают в граничные с указанной точностью и как следствие мы заканчиваем интегрирование.
                 do
                 {
-                    StepChanged = false;
-                    Incorrect = true;
+                    StepChanged = false;  // Изменяется на "правла", если шаг был изменен. Требуется для перезаписи старых значений У в массив Y[], чтобы расчитать новые значения с новым шагом.
+                    Incorrect = true;     // Пока "правда" цикл do while продолжает работу
                     //Вычисляем новые значения Y и Coeffs для шага h
                     Result = CalculateValuesOf_Y(X, Y, h, Equation);
 
@@ -118,10 +119,6 @@ namespace StandartHelperLibrary.MathHelper
                                 StepChanged = true;
                                 break;
                             }
-                            else
-                            {
-                                //ok ok
-                            }
                         }
                         else if (Deltas[j] < 0)
                         {
@@ -130,10 +127,6 @@ namespace StandartHelperLibrary.MathHelper
                                 h = h / 2d;
                                 StepChanged = true;
                                 break;
-                            }
-                            else
-                            {
-                                //ok ok
                             }
                         }
                     }
@@ -191,6 +184,7 @@ namespace StandartHelperLibrary.MathHelper
             // Вернуть результат
             return ResultSystemDifferential;
         }
+ //-----------------------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
         /// Метод вычисления новых значений Y с шагом в h
         /// </summary>
@@ -227,8 +221,7 @@ namespace StandartHelperLibrary.MathHelper
             }
             return (Y, Coefs1, Coefs2, Coefs3, Coefs4);
         }
-
-
+ //--------------------------------------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
         /// Вычисляет значение Y для вычисление коэффициентов
         /// </summary>
@@ -251,7 +244,7 @@ namespace StandartHelperLibrary.MathHelper
             }
             return Y_OUT;
         }
-        //------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
         /// Вывести отладочную информацию в консоль и в файл если задано имя
         /// </summary>
@@ -264,13 +257,12 @@ namespace StandartHelperLibrary.MathHelper
             // В консоль
             Console.WriteLine(Result.ToString());
         }
-        //------------------------------------------------------------
+ //--------------------------------------------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
         /// Простой пример системы дифференциальных уравнений  и ее решения 
         /// <returns>Результат решения</returns>
         public static TSystemResultDifferential Example_dN_Residual()
         {
-
             // Создаем систему уравнений, которая должна решаться и задаем ее параметры 
             ISystemDifferentialEquation Equation = new TEquation_dN()
             {
@@ -298,7 +290,13 @@ namespace StandartHelperLibrary.MathHelper
             // Решаем
             return SolveSystemResidualFourRungeKutta(Equation);
         }
-
+//-------------------------------------------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// Вычисляет значение невязок 
+        /// </summary>
+        /// <param name="X">Новое значение X</param>
+        /// <param name="Y">Новое значение У вычесленное по </param>
+        /// <returns></returns>
         private static List<TResidual> CalculateValuesOfTrackedVariables(double X, double[] Y)
         {
             List<TResidual> Residuals = new List<TResidual>();
@@ -325,6 +323,3 @@ namespace StandartHelperLibrary.MathHelper
         }
     }
 }
-
-
-//используется изменение Y без возврата самого Y, требуется перепроверить, можно ли вообше не выводить Y?   CalculateValuesOf_Y
