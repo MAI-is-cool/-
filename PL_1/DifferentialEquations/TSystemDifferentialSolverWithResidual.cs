@@ -91,6 +91,7 @@ namespace StandartHelperLibrary.MathHelper
                 StepChanged = false;
                 do
                 {
+                    StepChanged = false;
                     Incorrect = true;
                     //Вычисляем новые значения Y и Coeffs для шага h
                     Result = CalculateValuesOf_Y(X, Y, h, Equation);
@@ -222,15 +223,15 @@ namespace StandartHelperLibrary.MathHelper
             var Coefs1 = Equation.ComputeEquation(X, Y);
 
             // Находим значения переменных для второго коэф. 
-            var Y2 = Make_some_magic(Y, Coefs1, NumberOfEquations, h, true);
+            var Y2 = CalcYVolumeForCoefs(Y, Coefs1, NumberOfEquations, h, true);
             var Coefs2 = Equation.ComputeEquation(Kx2_3, Y2);
 
             // Находим значения переменных для третьго коэф.
-            var Y3 = Make_some_magic(Y, Coefs2, NumberOfEquations, h, true);
+            var Y3 = CalcYVolumeForCoefs(Y, Coefs2, NumberOfEquations, h, true);
             var Coefs3 = Equation.ComputeEquation(Kx2_3, Y3);
 
             // Находим значения переменных для 4 коэф.
-            var Y4 = Make_some_magic(Y, Coefs3, NumberOfEquations, h, false);
+            var Y4 = CalcYVolumeForCoefs(Y, Coefs3, NumberOfEquations, h, false);
             var Coefs4 = Equation.ComputeEquation(Kx4, Y4);
 
             // Находим новые значения переменных включая независимую    
@@ -243,14 +244,14 @@ namespace StandartHelperLibrary.MathHelper
 
 
         /// <summary>
-        /// ✧･ﾟ: *✧･ﾟ:*Makes precious magic*:･ﾟ✧*:･ﾟ✧
+        /// Вычисляет значение Y для вычисление коэффициентов
         /// </summary>
-        /// <param name="Y"></param>
+        /// <param name="Y">Старые значения игреков на основании, которых вычисляются коэф., а затем на основании коэф. вычисляются новые значения игреков</param>
         /// <param name="Coefs">Массив соответствующих коэффициентов</param>
         /// <param name="NumberOfEquations">Число уравнений. Отправляется для выполнения цикла соответствующее кол-во раз</param>
         /// <param name="This_is_2nd_or_3rd_Y">правда если при вызове название данной булиновой переменной верно</param>
         /// <returns></returns>
-        private static double[] Make_some_magic(double[] Y, double[] Coefs, int NumberOfEquations, double h, bool This_is_2nd_or_3rd_Y)
+        private static double[] CalcYVolumeForCoefs(double[] Y, double[] Coefs, int NumberOfEquations, double h, bool This_is_2nd_or_3rd_Y)
         {
             double[] Y_OUT = new double[NumberOfEquations];
             double K234 = new double(); //коэффициент, который только и отличается при расчете У2/У3/У4
@@ -294,7 +295,7 @@ namespace StandartHelperLibrary.MathHelper
 
                     //---------------------------------------------------------------
                     //задаются уравнения
-                    FunArray[0] = (4 * X);
+                    FunArray[0] = (X * X - 2 * Y[0]);
                     //FunArray[1] = (X + 2 * Y[0] + Y[1] + Y[2] + Y[3] + Y[4]);
                     //FunArray[2] = (X + Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
                     //FunArray[3] = (5 * X + 2 * Y[0] + 3 * Y[1] + Y[2] + Y[3] + Y[4]);
@@ -303,7 +304,7 @@ namespace StandartHelperLibrary.MathHelper
 
                     return FunArray;   // интегрируемая система
                 }),
-                InitArray = new List<double> { 0/*, 1, 1, 1, 1, */},
+                InitArray = new List<double> { 1/*, 1, 1, 1, 1, */},
                 CountIterations = 1000,
                 Min_X = 0,
                 Rounding = 3,
@@ -328,14 +329,14 @@ namespace StandartHelperLibrary.MathHelper
             TResidual R2 = new TResidual()
             {
                 Name = "",
-                ControlValue = 1d,
+                ControlValue = 0.3d,
                 CurrentValue = X,
                 Accuracy = 0.01d
             };
 
-            Residuals.Add(R1);
+            //Residuals.Add(R1);
             Residuals.Add(R2);
-            
+
             return Residuals;
         }
 
