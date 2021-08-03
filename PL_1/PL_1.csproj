@@ -55,16 +55,13 @@
     <Compile Include="DifferentialEquations\DifferentialEquations\SystemDifferentialEquation\TBaseSystemDifferentialEquation.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TPointDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TPointDifferentialTwo.cs" />
-    <Compile Include="DifferentialEquations\ResultSystemDifferential\TPointSystemResidualDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TPointSystemDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TResultDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultDifferential\TResultDifferentialTwo.cs" />
-    <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemResidualDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemDifferential.cs" />
     <Compile Include="DifferentialEquations\TDifferentialSolverTwo.cs" />
     <Compile Include="DifferentialEquations\TBoundaryValue.cs" />
     <Compile Include="DifferentialEquations\TSystemDifferentialSolverWithResidual.cs" />
-    <Compile Include="DifferentialEquations\TSystemDifferentialSolver.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DifferentialEquations\TDifferentialSolver.cs" />

@@ -250,7 +250,7 @@ namespace StandartHelperLibrary.MathHelper
         /// </summary>
         /// <param name="Result">Результат решения системы дифф. уравнений</param>
         /// <param name="FileName">Имя файла</param>
-        public static void Debug(TSystemResidualResultDifferential Result, string FileName = "")
+        public static void Debug(TSystemResultDifferential Result, string FileName = "")
         {
             // В файл
             if (FileName.Length > 0) File.WriteAllText(FileName, Result.ToString());
