@@ -62,7 +62,7 @@
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemResidualDifferential.cs" />
     <Compile Include="DifferentialEquations\ResultSystemDifferential\TResultSystemDifferential.cs" />
     <Compile Include="DifferentialEquations\TDifferentialSolverTwo.cs" />
-    <Compile Include="DifferentialEquations\TResidual.cs" />
+    <Compile Include="DifferentialEquations\TBoundaryValue.cs" />
     <Compile Include="DifferentialEquations\TSystemDifferentialSolverWithResidual.cs" />
     <Compile Include="DifferentialEquations\TSystemDifferentialSolver.cs" />
     <Compile Include="Program.cs" />

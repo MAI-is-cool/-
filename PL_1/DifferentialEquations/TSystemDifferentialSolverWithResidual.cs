@@ -29,11 +29,10 @@ namespace StandartHelperLibrary.MathHelper
             List<double> InitArray = Equation.InitArray;            // Начальные значения Y для системы
             TSystemResultDifferential ResultSystemDifferential = new TSystemResultDifferential();
 
-            //объявляются списки в которых будут храниться значения, которые были вычесленны. 
-            List<double> Xs = new List<double>();
+            //объявляются списки в которых будут храниться значения, которые были вычисленны. 
             List<double[]> Ys = new List<double[]>();
 
-            // Рабочие переменные
+            // Массивы коэффициентов участвующих в методе Рунге-Кутты
             double[] Coefs1 = new double[NumberOfEquations];// число 1-ыx коэф. метода по числу уравнений
             double[] Coefs2 = new double[NumberOfEquations];// число 2-ыx коэф. метода по числу уравнений
             double[] Coefs3 = new double[NumberOfEquations];// число 3-иx коэф. метода по числу уравнений
@@ -50,7 +49,7 @@ namespace StandartHelperLibrary.MathHelper
                 Y[k] = InitArray[k];
             }
 
-            //Закидываем первые значения в резалт поинт и далее в резалт
+            //Закидываем первые(начальные) значения в поинт и далее в резалт
             TPointSystemDifferential PointSystemDifferentialInitial = new TPointSystemDifferential
             {
                 Result = new double[NumberOfEquations],
@@ -64,27 +63,26 @@ namespace StandartHelperLibrary.MathHelper
             ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
             //Массив текущих значений, по которым мы вычисляем невязку.(отслеживаемые значения, которые при достижения граничного, завершают интегрирование)
-            List<double[]> Values = new List<double[]>();
-            var TrackedValues = CalculateValuesOfTrackedVariables(X, Y);
-            double[] Values_arr = new double[TrackedValues.Count()];
-            for (int i = 0; i < TrackedValues.Count(); i++)
+            List<double[]> Values = new List<double[]>();//лист массивов отслеживаемых значений
+            var TrackedValues = CalculateValuesOfTrackedVariables(X, Y);//лист класса свойств граничных значений и вычисления невязки
+            double[] Values_arr = new double[TrackedValues.Count()];//массив отслеживаемых значений на конкретной итерации
+            for (int i = 0; i < TrackedValues.Count(); i++)//запись новых значений в массив
             {
                 Values_arr[i] = TrackedValues[i].CurrentValue;
             }
-            Values.Add(Values_arr);
+            Values.Add(Values_arr);//добавление нового массива в лист массивов отслеживаемых значений
             
             //Цикл интегрирования. На каждой итерации совершается 1 "Шаг" интегрирования
             for (int i = 0; i < NumberOfIterations; i++)
             {
-                Xs.Add(X);// запись значений
-                double[] Ys_arr = new double[Y.Length];
+                double[] Ys_arr = new double[Y.Length];//создаем новый массив, который заполняем значениями игреков пердыдущей итерации
                 for (int j = 0; j < Y.Length; j++)
                 {
                     Ys_arr[j] = Y[j];
                 }
-                Ys.Add(Ys_arr);//добавление массивов значений игреков
+                Ys.Add(Ys_arr);//добавление массива значений игреков в лист, который хранит значений игреков на всех итерациях. для возможности отката назад
 
-                (double[] Y, double[] Coefs1, double[] Coefs2, double[] Coefs3, double[] Coefs4) Result;
+                (double[] Y, double[] Coefs1, double[] Coefs2, double[] Coefs3, double[] Coefs4) Result;//объявляется вне цикла do while чтобы не была локальной и можно было перекидывать значения после выхода из цикла
                 bool Incorrect = new bool();
                 bool TimeToStop = new bool();
                 bool StepChanged = new bool();
@@ -99,30 +97,30 @@ namespace StandartHelperLibrary.MathHelper
                     //просчет контрольных значений и невязок, так же хранит точность, название 
                     TrackedValues = CalculateValuesOfTrackedVariables(X + h, Y);
 
-                    if (i < 1)
+                    if (i < 1)//не проверяем выход по невязкам на первой(0-ой) итерации (т.к. нет еще пары значений текущей итерации и предыдущей, чтобы вычислить дельты) 
                         break;
                     
-                    double[] Deltas = new double[TrackedValues.Count()];
+                    double[] Deltas = new double[TrackedValues.Count()];//создается массив для записи в него значений "дельт" - изменение отслеживаемого значения между текущей итерации и предыдущей
                     for (int j = 0; j < TrackedValues.Count(); j++)
                     {
-                        Deltas[j] =/* Y[j] -*/TrackedValues[j].CurrentValue - Values[Values.Count() - 1][j];
+                        Deltas[j] = TrackedValues[j].CurrentValue - Values[Values.Count() - 1][j];//вычисление дельты конкретного отслеживаемого значения
                     }
 
                     //проверка на необходимость уменьшения шага
                     for (int j = 0; j < TrackedValues.Count(); j++)
                     {
-                        if (Deltas[j] > 0)
+                        if (Deltas[j] > 0)//если да, то приближение к граничному значению производится снизу вверх
                         {
-                            if (TrackedValues[j].CurrentValue > TrackedValues[j].ControlValue + TrackedValues[j].Accuracy)
+                            if (TrackedValues[j].CurrentValue > TrackedValues[j].BoundaryValue + TrackedValues[j].Accuracy)
                             {
                                 h = h / 2d;
                                 StepChanged = true;
                                 break;
                             }
                         }
-                        else if (Deltas[j] < 0)
+                        else if (Deltas[j] < 0) //если да, то приближение к граничному значению производится сверху вниз 
                         {
-                            if (TrackedValues[j].CurrentValue < TrackedValues[j].ControlValue - TrackedValues[j].Accuracy)
+                            if (TrackedValues[j].CurrentValue < TrackedValues[j].BoundaryValue - TrackedValues[j].Accuracy)
                             {
                                 h = h / 2d;
                                 StepChanged = true;
@@ -131,7 +129,7 @@ namespace StandartHelperLibrary.MathHelper
                         }
                     }
 
-                    if (StepChanged)
+                    if (StepChanged)//если шаг изменен, то надо заного проверить не перескакиваем ли мы с уменьшенным шагом, а так же вычислить игреки заного. А для вычисления игреков заного надо перезаписать старые игреки в массив
                     {
                         for (int j = 0; j < Y.Length; j++)
                         {
@@ -141,10 +139,10 @@ namespace StandartHelperLibrary.MathHelper
                     else
                     {
                         Incorrect = false;
-                        //проверка, не вошло ли уже значение в область
+                        //проверка, не вошло ли уже значение в область граниченрого значения, а значит не пора ли уже завершить интегрирование
                         for (int j = 0; j < TrackedValues.Count(); j++)
                         {
-                            if (Math.Abs(TrackedValues[j].Residual) <= TrackedValues[j].Accuracy)//по хорошему бы переработать для случая, когда условие выхода отрицательное или когда начальное значение параметра больше чем условие выхода и идет спуск к выходному
+                            if (Math.Abs(TrackedValues[j].Residual) <= TrackedValues[j].Accuracy)
                             {
                                 TimeToStop = true;
                                 break;
@@ -154,21 +152,23 @@ namespace StandartHelperLibrary.MathHelper
                 }
                 while (Incorrect);
                 
-                Values_arr = new double[TrackedValues.Count()];
+
+                Values_arr = new double[TrackedValues.Count()];//создается новый массив для записи в него текущих значений отслеживаемых переменных
                 for (int j = 0; j < TrackedValues.Count(); j++)
                 {
-                    Values_arr[j] = TrackedValues[j].CurrentValue;
+                    Values_arr[j] = TrackedValues[j].CurrentValue;//заполнение массива текущими значениями(для данного шага) отслеживаемых переменных
                 }
-                Values.Add(Values_arr);
+                Values.Add(Values_arr);//добавляется в лист массивов с отслеживаемыми переменными
 
                 //прибавляем шаг к Х
                 X += h;
 
+                //создаем новый поинт и записываем результаты вычислений в него
                 TPointSystemDifferential PointSystemDifferential = new TPointSystemDifferential
                 {
                     Result = new double[NumberOfEquations],
                     IndexIteration = i + 1,
-                    Coeffs = new List<double[]> { Result.Coefs1, Result.Coefs2, Result.Coefs1, Result.Coefs3, Result.Coefs4 }
+                    Coeffs = new List<double[]> { Result.Coefs1, Result.Coefs2, Result.Coefs3, Result.Coefs4 }
                 };
                 //Записываем новые значения в поинт, а далее поинт в резалт
                 PointSystemDifferential.X = X;
@@ -178,7 +178,7 @@ namespace StandartHelperLibrary.MathHelper
                 }
                 ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
-                if (TimeToStop)
+                if (TimeToStop)//если условие выполняется, то мы заканчиваем интегрирование и возвращем собранные в ходе вычислений значения
                     return ResultSystemDifferential;
             }
             // Вернуть результат
@@ -292,34 +292,35 @@ namespace StandartHelperLibrary.MathHelper
         }
 //-------------------------------------------------------------------------------------------------------------------------------------
         /// <summary>
-        /// Вычисляет значение невязок 
+        /// Вычисляет значение отслеживаемых переменных 
         /// </summary>
         /// <param name="X">Новое значение X</param>
         /// <param name="Y">Новое значение У вычесленное по </param>
         /// <returns></returns>
-        private static List<TResidual> CalculateValuesOfTrackedVariables(double X, double[] Y)
+        private static List<TBoundaryValue> CalculateValuesOfTrackedVariables(double X, double[] Y)
         {
-            List<TResidual> Residuals = new List<TResidual>();
-            TResidual R1 = new TResidual()
+            List<TBoundaryValue> BoundaryValues = new List<TBoundaryValue>();
+            TBoundaryValue R1 = new TBoundaryValue()
             {
-                Name = "",
-                ControlValue = 0.33d,
-                CurrentValue = Y[0],
-                Accuracy = 0.01d
+                Name = "", //название граничного значения(опционально и можно не указывать. создано чтобы не забывать какое граничное значение тут записано
+                BoundaryValue = 0.33d, //граничное значение, по которому завершается интегрирование
+                CurrentValue = Y[0], //вычисление текущего значения, которое мы сравниваем с граничным
+                Accuracy = 0.01d //точность граничного значения
             };
 
-            TResidual R2 = new TResidual()
+            TBoundaryValue R2 = new TBoundaryValue()
             {
                 Name = "",
-                ControlValue = 1d,
+                BoundaryValue = 1d,
                 CurrentValue = X,
                 Accuracy = 0.01d
             };
 
+            //в лист записываются отслеживаемые переменные
             //Residuals.Add(R1);
-            Residuals.Add(R2);
+            BoundaryValues.Add(R2);
 
-            return Residuals;
+            return BoundaryValues;
         }
     }
 }
