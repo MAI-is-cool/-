@@ -21,6 +21,8 @@ namespace StandartHelperLibrary.MathHelper
         /// <returns>Результат решения</returns>
         public static TSystemResultDifferential SolveSystemResidualFourRungeKutta(ISystemDifferentialEquation Equation)
         {
+            int K_Out = 3;//коэффициент вывода(каждая N-ая строчка будет выведена)
+            
             double X = Equation.Min_X;                              // Крайняя левая точка диапазона "х" 
             double h = Equation.Step;                               // Шаг сетки "h" 
             int t = Equation.Rounding;                              // Округление до нужного знака, после запятой 
@@ -60,7 +62,8 @@ namespace StandartHelperLibrary.MathHelper
             {
                 PointSystemDifferentialInitial.Result[i] = Y[i];
             }
-            ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
+            if (K_Out > 0 || K_Out == -1)
+                ResultSystemDifferential.SystemPoints.Add(PointSystemDifferentialInitial);
 
             //Массив текущих значений, по которым мы вычисляем невязку.(отслеживаемые значения, которые при достижения граничного, завершают интегрирование)
             List<double[]> Values = new List<double[]>();//лист массивов отслеживаемых значений
@@ -176,10 +179,18 @@ namespace StandartHelperLibrary.MathHelper
                 {
                     PointSystemDifferential.Result[j] = Result.Y[j];
                 }
-                ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
 
+                if (K_Out > 0 && (i + 1) % K_Out == 0)
+                    ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
+                
                 if (TimeToStop)//если условие выполняется, то мы заканчиваем интегрирование и возвращем собранные в ходе вычислений значения
+                {
+                    if (K_Out > 0 && (i + 1) % K_Out != 0)
+                        ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
+                    else if (K_Out == -1)
+                        ResultSystemDifferential.SystemPoints.Add(PointSystemDifferential);
                     return ResultSystemDifferential;
+                } 
             }
             // Вернуть результат
             return ResultSystemDifferential;
